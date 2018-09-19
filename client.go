@@ -165,3 +165,7 @@ func (c *Conn) readBody(bodyLen int) ([]byte, error) {
 
 	return body[:n-2], nil //strip \r\n trail
 }
+
+func (c *Conn) Close() error {
+	return c.conn.Close()
+}
