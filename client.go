@@ -8,6 +8,7 @@ import (
 	"strings"
 	"io"
 	"errors"
+	"sync"
 )
 
 const minLenToBuf = 1500 //minimum data len to send using bufio, otherwise use TCPConn
@@ -17,6 +18,7 @@ type Conn struct {
 	addr      string
 	bufReader *bufio.Reader
 	bufWriter *bufio.Writer
+	mutex     *sync.RWMutex
 }
 
 func newConn(conn net.Conn, addr string) (*Conn, error) {
@@ -25,6 +27,7 @@ func newConn(conn net.Conn, addr string) (*Conn, error) {
 	c.addr = addr
 	c.bufReader = bufio.NewReader(conn)
 	c.bufWriter = bufio.NewWriter(conn)
+	c.mutex = new(sync.RWMutex)
 
 	return c, nil
 }
@@ -45,7 +48,6 @@ func Dial(addr string) (*Conn, error) {
 }
 
 func (c *Conn) Use(tubeName string) error {
-
 	//check parameter
 	if len(tubeName) > 200 {
 		return errors.New("tube name is unavailable")

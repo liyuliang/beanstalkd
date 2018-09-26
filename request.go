@@ -2,6 +2,10 @@ package beanstalkd
 
 // Send command and read response
 func send(c *Conn, cmd string) (string, error) {
+
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
 	_, err := sendFull(c, []byte(cmd))
 	if err != nil {
 		return "", err
@@ -17,6 +21,9 @@ func send(c *Conn, cmd string) (string, error) {
 
 //request for expected results
 func sendAndGetExpect(c *Conn, cmd, expectResult string) error {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
 	resp, err := send(c, cmd)
 	if err != nil {
 		return err
@@ -32,6 +39,9 @@ func sendAndGetExpect(c *Conn, cmd, expectResult string) error {
 //if data len < 1500, it use TCPConn.Write
 //if data len >= 1500, it use bufio.Write
 func sendFull(c *Conn, data []byte) (int, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
 	toWrite := data
 	totWritten := 0
 	var n int
