@@ -146,10 +146,18 @@ func (c *Conn) Bury(id uint64, pri uint32) error {
 	return sendAndGetExpect(c, cmd, expected)
 }
 
-func (c *Conn) KickJob(id uint64) error {
-	cmd := fmt.Sprintf("kick-job %d\r\n", id)
-	expected := "KICKED\r\n"
-	return sendAndGetExpect(c, cmd, expected)
+func (c *Conn) Kick(num uint64) (realKickNum int, err error) {
+	cmd := fmt.Sprintf("kick %d\r\n", num)
+	resp, err := send(c, cmd)
+
+	if err != nil {
+		return 0, err
+	}
+	if strings.HasPrefix(resp, "KICKED") {
+		fmt.Sscanf(resp, "KICKED %d\r\n", &realKickNum)
+		return realKickNum, nil
+	}
+	return 0, parseError(resp)
 }
 
 //Quit close network connection.
